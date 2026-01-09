@@ -119,8 +119,7 @@ def read_file():
 
     except FileNotFoundError:
         # Error in case the file is not found
-        print(f"\n[!] Error: File '{filename}' not found.\n"
-              f"\n[?] Did you make sure to enter the filename correctly?\n")
+        print(f"\n[!] Error: File '{filename}' not found.\n")
         # general error case in the event the file is corrupted or gets deleted mid-read
     except Exception as e:
         print(f"[!] Error reading file '{filename}': {e}\n")
