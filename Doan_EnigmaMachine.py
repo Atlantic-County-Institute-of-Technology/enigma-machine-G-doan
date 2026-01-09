@@ -1,7 +1,7 @@
 # Author: Gavin Doan
-# Description: To encrypt using a rotational cipher
+# Description: To encrypt using a rotational vigenere cipher and save text to a file
 # Created: 11.19.25
-# Last Updated: 11.24.25
+# Last Updated: 01.9.26
 
 
 # Used Imports
@@ -9,8 +9,18 @@ import os
 import inquirer3
 
 
+def input_validate(context):
+    valid = True
+    while valid:
+        entry = input(context)
+        if entry.isalpha():
+            return entry
+        else:
+            print("ERROR! Please enter only alphabetical characters")
+
+
 def set_key(msg):  # Function to se the key length equal to the msg length
-    key = input("Please enter a Key: ")
+    key = input_validate("Enter a key: ")
     key_fixed = ""
     j = -1  # Separate counter for the message so it skips spaces correctly
     if len(msg) == len(key):  # Returns if the length is already the same
@@ -64,7 +74,7 @@ def decrypt_vigenere(msg):  # Function for the Encryption using vigenere cipher
 
 
 def write_file(message):
-    # Inquirer Menu options for writing it to a file
+    # Inquirer Menu options for overwriting/adding it to a new file
     questions2 = [
         inquirer3.List('menu',
                        message="Do you want to Overwrite or make a New file?",
@@ -75,12 +85,14 @@ def write_file(message):
     select2 = "{}".format(answers['menu'])
 
     match select2:
-        case "Overwrite File":
-            filename = input("\nWhat file do you want to Overwrite:") + ".txt"
-        case "New File":
-            filename = input("\n Enter new filename:")
-            filename = filename + ".txt"
-        case "Do Not Save":
+        case "Overwrite File":  # If user chooses to Overwrite a file
+            filename = input("What file do you want to Overwrite:") + ".txt"  # Input to ask user for filename
+            os.system('cls' if os.name == 'nt' else 'clear')  # To clear old text
+        case "New File":  # If user chooses to make a new file
+            filename = input("Enter new filename:") + ".txt"  # Input to ask user for filename
+            os.system('cls' if os.name == 'nt' else 'clear')  # To clear old text
+        case "Do Not Save":  # If the user doesn't want to save the text
+            os.system('cls' if os.name == 'nt' else 'clear')  # To clear old text
             return
     try:
         # Adds the message to the file
@@ -96,18 +108,17 @@ def write_file(message):
 # read the contents of a file (if it exists).
 def read_file():
     # in this context we need to include the file extension (ex: 'hello.txt)
-    filename = input("[-] Please enter the filename to read: ") + ".txt"
-
+    filename = input("Please enter the filename to read: ") + ".txt"
+    # Try block to test if the file is real
     try:
         # attempt to read the contents of the file
         with open(filename, 'r') as file:
             contents = file.read()
-            print(f"[-] Contents of '{filename}':")
-            # contents is stored as a string, so we can just throw it to print
+            # Print to show the content
             print(f"Contents: {contents}\n")
 
     except FileNotFoundError:
-        # we account for FNF since it's the most likely issue
+        # Error in case the file is not found
         print(f"\n[!] Error: File '{filename}' not found.\n"
               f"\n[?] Did you make sure to enter the filename correctly?\n")
         # general error case in the event the file is corrupted or gets deleted mid-read
@@ -123,7 +134,8 @@ def main():
             inquirer3.List('menu',
                            message="What would you like to do?",
 
-                           choices=['Encrypt Text', 'Decrypt Text', 'Encrypt File', 'Decrypt File', 'Read File', 'Exit'])
+                           choices=['Encrypt Text', 'Decrypt Text', 'Encrypt File', 'Decrypt File', 'Read File',
+                                    'Exit'])
         ]
         answers = inquirer3.prompt(questions)
         select = "{}".format(answers['menu'])
@@ -136,14 +148,14 @@ def main():
                 message = input("Enter Text: ")  # Input for to be encrypted msg
                 encrypted_message = encrypt_vigenere(message)  # Function to encrypt the message
                 print(f"Encrypted Text: {encrypted_message} \n")  # Prints the Encrypted Message
-                write_file(encrypted_message)
+                write_file(encrypted_message)  # Function to ask the user to save to a file
 
             case "Decrypt Text":  # Option to Decrypt text
                 os.system('cls' if os.name == 'nt' else 'clear')  # To clear old text
                 message = input("Enter Text: ")  # Input for to be Decrypted msg
-                decrypted_message = encrypt_vigenere(message)  # Function to Decrypt the message
+                decrypted_message = decrypt_vigenere(message)  # Function to Decrypt the message
                 print(f"Encrypted Text: {decrypted_message} \n")  # Prints the Decrypted Message
-                write_file(decrypted_message)
+                write_file(decrypted_message)  # Function to ask the user to save to a file
 
             case "Encrypt File":  # Option to Decrypt file
                 os.system('cls' if os.name == 'nt' else 'clear')  # To clear old text
@@ -153,9 +165,9 @@ def main():
                     with open(fname, 'r') as f:
                         fmsg = f.read()
                         print(f"Text: {fmsg}")  # Prints the content before the Decrypt
-                    encrypted_message = encrypt_vigenere(fmsg)
-                    print(f"Encrypted File Text: {encrypted_message}")
-                    write_file(encrypted_message)
+                    encrypted_message = encrypt_vigenere(fmsg)  # Function to Encrypt the message
+                    print(f"Encrypted File Text: {encrypted_message}")  # Prints the Encrypted message
+                    write_file(encrypted_message)  # Function to ask the user to save to a file
 
                 except FileNotFoundError:
                     print("Error! File Not Found.")
@@ -167,14 +179,13 @@ def main():
                 os.system('cls' if os.name == 'nt' else 'clear')  # To clear old text
                 fname = input("What File?: ") + ".txt"
 
-                try:  # try block to make sure file exists
+                try:  # try block to make sure file exist
                     with open(fname, 'r') as f:
-                        print(f.read())
                         fmsg = f.read()
                         print(f"Text: {fmsg}")  # Prints the content before the Decrypt
                     decrypted_message = decrypt_vigenere(fmsg)
-                    print(f"Decrypted File Text: {decrypted_message}")
-                    write_file(decrypted_message)
+                    print(f"Encrypted Text: {decrypted_message} \n")  # Prints the Decrypted Message
+                    write_file(decrypted_message)  # Function to ask the user to save to a file
 
                 except FileNotFoundError:
                     print("Error! File Not Found.\n")
